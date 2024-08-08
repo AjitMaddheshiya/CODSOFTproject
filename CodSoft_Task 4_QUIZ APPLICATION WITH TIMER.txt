@@ -1,0 +1,88 @@
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+class Question {
+    String question;
+    String[] options;
+    char correctAnswer;
+
+    public Question(String question, String[] options, char correctAnswer) {
+        this.question = question;
+        this.options = options;
+        this.correctAnswer = correctAnswer;
+    }
+}
+
+public class Main {
+    private static Question[] quizQuestions;
+    private static Scanner scanner;
+    private static int score;
+    private static boolean[] results;
+
+    public static void main(String[] args) {
+        // Initialize quiz questions
+        quizQuestions = new Question[3];
+        quizQuestions[0] = new Question("What is the capital of France?", new String[]{"A. Paris", "B. London", "C. Berlin", "D. Madrid"}, 'A');
+        quizQuestions[1] = new Question("Which planet is known as the Red Planet?", new String[]{"A. Earth", "B. Mars", "C. Jupiter", "D. Saturn"}, 'B');
+        quizQuestions[2] = new Question("Who wrote 'To Kill a Mockingbird'?", new String[]{"A. Harper Lee", "B. Jane Austen", "C. Mark Twain", "D. J.K. Rowling"}, 'A');
+
+        scanner = new Scanner(System.in);
+        score = 0;
+        results = new boolean[quizQuestions.length];
+
+        // Start the quiz
+        startQuiz();
+
+        // Display results
+        displayResults();
+    }
+
+    private static void startQuiz() {
+        for (int i = 0; i < quizQuestions.length; i++) {
+            displayQuestion(quizQuestions[i]);
+            boolean result = getAnswerAndCheck(quizQuestions[i]);
+            results[i] = result;
+            if (result) {
+                score++;
+            }
+        }
+    }
+
+    private static void displayQuestion(Question q) {
+        System.out.println("\n" + q.question);
+        for (String option : q.options) {
+            System.out.println(option);
+        }
+    }
+
+    private static boolean getAnswerAndCheck(Question q) {
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            public void run() {
+                System.out.println("\nTime's up!");
+                System.exit(0);
+            }
+        };
+        timer.schedule(task, 10000); // 10 seconds timer for each question
+
+        System.out.print("Enter your answer (A/B/C/D): ");
+        char answer = scanner.next().charAt(0);
+        timer.cancel();
+
+        return answer == q.correctAnswer;
+    }
+
+    private static void displayResults() {
+        System.out.println("\nQuiz Completed!");
+        System.out.println("Your score: " + score + "/" + quizQuestions.length);
+
+        for (int i = 0; i < quizQuestions.length; i++) {
+            Question q = quizQuestions[i];
+            boolean result = results[i];
+            System.out.println((i + 1) + ". " + q.question);
+            System.out.println("Your answer: " + (result ? "Correct" : "Incorrect"));
+            System.out.println("Correct answer: " + q.correctAnswer);
+        }
+    }
+}
