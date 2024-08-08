@@ -1,0 +1,261 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+// Class to represent a Course
+class Course {
+    private String code;
+    private String title;
+    private String description;
+    private int capacity;
+    private String schedule;
+    private int registeredStudents;
+
+    public Course(String code, String title, String description, int capacity, String schedule) {
+        this.code = code;
+        this.title = title;
+        this.description = description;
+        this.capacity = capacity;
+        this.schedule = schedule;
+        this.registeredStudents = 0;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public String getSchedule() {
+        return schedule;
+    }
+
+    public int getRegisteredStudents() {
+        return registeredStudents;
+    }
+
+    public boolean registerStudent() {
+        if (registeredStudents < capacity) {
+            registeredStudents++;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean dropStudent() {
+        if (registeredStudents > 0) {
+            registeredStudents--;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean hasAvailableSlots() {
+        return registeredStudents < capacity;
+    }
+
+    @Override
+    public String toString() {
+        return "Course Code: " + code + "\nTitle: " + title + "\nDescription: " + description + "\nCapacity: " + capacity + "\nSchedule: " + schedule + "\nRegistered Students: " + registeredStudents;
+    }
+}
+
+// Class to represent a Student
+class Student {
+    private String studentID;
+    private String name;
+    private List<Course> registeredCourses;
+
+    public Student(String studentID, String name) {
+        this.studentID = studentID;
+        this.name = name;
+        this.registeredCourses = new ArrayList<>();
+    }
+
+    public String getStudentID() {
+        return studentID;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Course> getRegisteredCourses() {
+        return registeredCourses;
+    }
+
+    public boolean registerCourse(Course course) {
+        if (!registeredCourses.contains(course) && course.registerStudent()) {
+            registeredCourses.add(course);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean dropCourse(Course course) {
+        if (registeredCourses.contains(course)) {
+            registeredCourses.remove(course);
+            course.dropStudent();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Student ID: ").append(studentID).append("\nName: ").append(name).append("\nRegistered Courses:\n");
+        for (Course course : registeredCourses) {
+            sb.append(course.getCode()).append(" - ").append(course.getTitle()).append("\n");
+        }
+        return sb.toString();
+    }
+}
+
+// Main class to handle the Student Course Registration System
+public class Main {
+    private static List<Course> courses = new ArrayList<>();
+    private static List<Student> students = new ArrayList<>();
+    private static Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        // Initialize some courses
+        courses.add(new Course("CS101", "Introduction to Computer Science", "Learn the basics of computer science.", 30, "MWF 10-11AM"));
+        courses.add(new Course("MATH101", "Calculus I", "Introduction to calculus.", 25, "TTh 9-10:30AM"));
+        courses.add(new Course("ENG101", "English Literature", "Study of English literature.", 20, "MWF 1-2PM"));
+
+        // Initialize some students
+        students.add(new Student("S001", "Alice Johnson"));
+        students.add(new Student("S002", "Bob Smith"));
+
+        // Main menu
+        while (true) {
+            System.out.println("\nStudent Course Registration System");
+            System.out.println("1. List Available Courses");
+            System.out.println("2. Register for a Course");
+            System.out.println("3. Drop a Course");
+            System.out.println("4. View Student Details");
+            System.out.println("5. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    listAvailableCourses();
+                    break;
+                case 2:
+                    registerForCourse();
+                    break;
+                case 3:
+                    dropCourse();
+                    break;
+                case 4:
+                    viewStudentDetails();
+                    break;
+                case 5:
+                    System.out.println("Exiting...");
+                    return;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+
+    private static void listAvailableCourses() {
+        System.out.println("\nAvailable Courses:");
+        for (Course course : courses) {
+            System.out.println(course);
+            System.out.println("Available Slots: " + (course.getCapacity() - course.getRegisteredStudents()));
+            System.out.println();
+        }
+    }
+
+    private static void registerForCourse() {
+        System.out.print("Enter Student ID: ");
+        String studentID = scanner.nextLine();
+        Student student = findStudentByID(studentID);
+        if (student == null) {
+            System.out.println("Student not found.");
+            return;
+        }
+
+        System.out.print("Enter Course Code: ");
+        String courseCode = scanner.nextLine();
+        Course course = findCourseByCode(courseCode);
+        if (course == null) {
+            System.out.println("Course not found.");
+            return;
+        }
+
+        if (student.registerCourse(course)) {
+            System.out.println("Successfully registered for the course.");
+        } else {
+            System.out.println("Failed to register for the course. It might be full or you are already registered.");
+        }
+    }
+
+    private static void dropCourse() {
+        System.out.print("Enter Student ID: ");
+        String studentID = scanner.nextLine();
+        Student student = findStudentByID(studentID);
+        if (student == null) {
+            System.out.println("Student not found.");
+            return;
+        }
+
+        System.out.print("Enter Course Code: ");
+        String courseCode = scanner.nextLine();
+        Course course = findCourseByCode(courseCode);
+        if (course == null) {
+            System.out.println("Course not found.");
+            return;
+        }
+
+        if (student.dropCourse(course)) {
+            System.out.println("Successfully dropped the course.");
+        } else {
+            System.out.println("Failed to drop the course. You might not be registered in this course.");
+        }
+    }
+
+    private static void viewStudentDetails() {
+        System.out.print("Enter Student ID: ");
+        String studentID = scanner.nextLine();
+        Student student = findStudentByID(studentID);
+        if (student == null) {
+            System.out.println("Student not found.");
+            return;
+        }
+
+        System.out.println(student);
+    }
+
+    private static Student findStudentByID(String studentID) {
+        for (Student student : students) {
+            if (student.getStudentID().equals(studentID)) {
+                return student;
+            }
+        }
+        return null;
+    }
+
+    private static Course findCourseByCode(String courseCode) {
+        for (Course course : courses) {
+            if (course.getCode().equals(courseCode)) {
+                return course;
+            }
+        }
+        return null;
+    }
+}
